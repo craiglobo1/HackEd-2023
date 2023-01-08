@@ -81,7 +81,13 @@ def extractOrder(paragraphs):
         paragraphs[i]["fnt_size"] = (paragraphs[i]["fnt_size"] - min_size)/size_range
         if min([bounds[1] for bounds in para["bounds"]]) < max_height*0.1:
             paragraphs[i]["fnt_size"] *= 1.1
-        if paragraphs[i]["fnt_size"] >= 0.95:
+        
+        elif max([bounds[1] for bounds in para["bounds"]]) >= max_height*0.9:
+            paragraphs[i]["fnt_size"] *= 0.9
+        
+        if paragraphs[i]["fnt_size"] <= 0.05:
+            order.append("")        
+        elif paragraphs[i]["fnt_size"] >= 0.95:
             order.append('h')
         else:
             order.append('p')
