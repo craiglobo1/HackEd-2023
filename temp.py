@@ -51,7 +51,6 @@ def extract_data(img_url):
     return paragraphs
 
 
-
 def extractOrder(paragraphs):
     order = []
     for i in range(len(paragraphs)):
@@ -83,7 +82,7 @@ def pages_to_pdf_here(uris):
     return wpdf.output(dest='S')
 
 
-data = pages_to_pdf_here(["https://media.discordapp.net/attachments/1061328440021753858/1061439675358773278/IMG_2940.jpg"])
 # with open("test2.pdf", "w+", encoding="utf-8") as wf:
 #     wf.write(data)
-upload_data_to_drive("test.pdf", data)
+data = pages_to_pdf(["https://i.pinimg.com/564x/e5/53/bf/e553bf6c13fb6768e5289ca7bd142fff--penmanship-cursive.jpg"])
+upload_data_to_drive(data)

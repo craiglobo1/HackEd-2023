@@ -52,10 +52,11 @@ def upload_to_drive(filename):
 
 
 
-def upload_data_to_drive(name, data):
+def upload_data_to_drive(data):
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
     """
+    file_id = "131ieKC8dTq0V9ou1coZAwzncaaEYXCMD"
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -66,7 +67,7 @@ def upload_data_to_drive(name, data):
     if not creds or not creds.valid:
         if creds and creds.expired and creds.refresh_token:
             creds.refresh(Request())
-        else:
+        else:   
             flow = InstalledAppFlow.from_client_secrets_file(
                 'credentials.json', SCOPES)
             creds = flow.run_local_server(port=0)
@@ -76,16 +77,29 @@ def upload_data_to_drive(name, data):
 
     try:
         # create drive api client
-        service = build('drive', 'v3', credentials=creds)
+        service = build('drive', 'v2', credentials=creds)
 
-        file_metadata = {'name': name}
+
+        file = service.files().get(fileId=file_id).execute()
         media = MediaIoBaseUpload(io.BytesIO(data),
                                 mimetype='application/pdf')
-        # pylint: disable=maybe-no-member
-        file = service.files().create(body=file_metadata, media_body=media,
-                                      fields='id').execute()
-        # print(F'File ID: {file.get("id")}')
-        return file.get("id")
+
+        updated_file = service.files().update(
+            fileId=file_id,
+            body=file,
+            newRevision=False,
+            media_body=media).execute()
+        return updated_file
+        # service.files().delete(fileId=fileid).execute()   
+
+
+
+        # file_metadata = {'name': name}
+        # # pylint: disable=maybe-no-member
+        # file = service.files().create(body=file_metadata, media_body=media,
+        #                               fields='id').execute()
+        # # print(F'File ID: {file.get("id")}')
+        # return file.get("id")
 
     except HttpError as error:
         print(F'An error occurred: {error}')
@@ -94,4 +108,4 @@ def upload_data_to_drive(name, data):
 
 
 if __name__ == '__main__':
-    print(upload_to_drive("pg1.jpg"))
+    print(upload_data_to_drive("format.pdf"))

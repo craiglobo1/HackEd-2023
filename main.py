@@ -178,7 +178,7 @@ def generate_typed_notes():
             # if all([ isinstance(val, str) for val in uris]):
             app.logger.info("created pdf")
             data = pages_to_pdf(uris)
-            upload_data_to_drive("formatted.pdf", data)
+            upload_data_to_drive(data)
 
             return jsonify(uris)
         else:
