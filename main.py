@@ -72,3 +72,7 @@ def get_text_bounds():
             data["blocks"].append(c_block)
 
         return jsonify(data)
+
+
+if __name__ == "__main__":
+    app.run()

@@ -2,3 +2,7 @@
 *.png
 *.jpg
 *.jpeg
+*.yaml
+.gcloudignore
+*.json
+*.txt
