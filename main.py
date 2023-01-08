@@ -6,6 +6,8 @@ import requests
 from fpdf import FPDF
 from drive import upload_data_to_drive
 import os
+from gtts import gTTS
+from io import BytesIO
 
 app = Flask(__name__)
 app = Flask(__name__)
@@ -175,6 +177,19 @@ def get_ocr_data_from_uri(uri):
         data["blocks"].append(c_block)
     return data
 
+def read_notes(uris):
+    text = ""
+    for uri in uris:
+        uri = unquote(uri)
+        page_data = requests.get(F"https://handwrite-374020.wn.r.appspot.com/v1/get_text_bounds/?uri={uri}").json()
+        paras = extract_data(page_data)
+        paras.sort(key=lambda x: min([bound[1] for bound in x["bounds"]]))
+        text += "\n".join([para["text"] for para in paras]) +"\n"
+    tts = gTTS(text=text, lang="en", slow=False)
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    return fp
 
 @app.route("/")
 @cross_origin()
@@ -211,7 +226,30 @@ def generate_typed_notes():
             # if all([ isinstance(val, str) for val in uris]):
             app.logger.info("created pdf")
             data = pages_to_pdf(uris)
-            upload_data_to_drive(data)
+            upload_data_to_drive(data,"application/pdf", "131ieKC8dTq0V9ou1coZAwzncaaEYXCMD")
+
+            return jsonify(uris)
+        else:
+            return jsonify({"Error" : "uris not a list"})
+
+
+
+@app.route("/v1/generate_audio/")
+@cross_origin()
+def generate_audio():
+    if request.args.get("uris", default=-1) == -1:
+        return jsonify({"Error" : "No img uris provided"})
+    else:
+        try:
+            uris = eval(request.args.get("uris"))
+        except:
+            return jsonify({"Error" : "Invalid uris provided"})
+
+        if isinstance(uris, list):
+            # if all([ isinstance(val, str) for val in uris]):
+            app.logger.info("created pdf")
+            data = read_notes(uris)
+            upload_data_to_drive(data.read(), "audio/wav","1I56myabft5w2fykmtKA6pYMP416CxM-_")
 
             return jsonify(uris)
         else:

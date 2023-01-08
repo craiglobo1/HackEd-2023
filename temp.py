@@ -5,6 +5,8 @@ import requests
 from drive import upload_data_to_drive
 from main import pages_to_pdf
 import base64
+from gtts import gTTS
+from io import BytesIO
 class PDF(FPDF):
     def headline(self, headline):
         self.set_font('Times', 'B', 18)
@@ -114,7 +116,27 @@ def pages_to_pdf_here(uris):
     return wpdf.output(dest='S')
 
 
+def read_notes(uris):
+    text = ""
+    for uri in uris:
+        uri = unquote(uri)
+        page_data = requests.get(F"https://handwrite-374020.wn.r.appspot.com/v1/get_text_bounds/?uri={uri}").json()
+        paras = extract_data(page_data)
+        paras.sort(key=lambda x: min([bound[1] for bound in x["bounds"]]))
+        text += "\n".join([para["text"] for para in paras]) +"\n"
+    tts = gTTS(text=text, lang="en", slow=False)
+    fp = BytesIO()
+    tts.write_to_fp(fp)
+    fp.seek(0)
+    return fp
+
+data = read_notes(["https://media.discordapp.net/attachments/1061328440021753858/1061439675358773278/IMG_2940.jpg", "https://media.discordapp.net/attachments/1061328440021753858/1061439675358773278/IMG_2940.jpg"])
+upload_data_to_drive(data.read(), "audio/wav","1I56myabft5w2fykmtKA6pYMP416CxM-_")
+# mytext = 'Welcome to geeksforgeeks!'
+    
+# myobj.save("welcome.mp3")
+
+
 # with open("test2.pdf", "w+", encoding="utf-8") as wf:
 #     wf.write(data)
-data = pages_to_pdf_here(["https://media.discordapp.net/attachments/1061328440021753858/1061439675358773278/IMG_2940.jpg"])
-upload_data_to_drive(data)
+# data = pages_to_pdf_here(["https://media.discordapp.net/attachments/1061328440021753858/1061439675358773278/IMG_2940.jpg"])

@@ -52,11 +52,10 @@ def upload_to_drive(filename):
 
 
 
-def upload_data_to_drive(data):
+def upload_data_to_drive(data, mime_type, file_id):
     """Shows basic usage of the Drive v3 API.
     Prints the names and ids of the first 10 files the user has access to.
     """
-    file_id = "131ieKC8dTq0V9ou1coZAwzncaaEYXCMD"
     creds = None
     # The file token.json stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first
@@ -82,7 +81,7 @@ def upload_data_to_drive(data):
 
         file = service.files().get(fileId=file_id).execute()
         media = MediaIoBaseUpload(io.BytesIO(data),
-                                mimetype='application/pdf')
+                                mimetype=mime_type)
 
         updated_file = service.files().update(
             fileId=file_id,
