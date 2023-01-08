@@ -1,21 +1,27 @@
 from flask import Flask, jsonify, request
+from flask_cors import CORS, cross_origin
 from urllib.parse import unquote
 from google.cloud import vision
 import requests
 from fpdf import FPDF
-from drive import upload_to_drive
+from drive import upload_data_to_drive
+import os
 
 app = Flask(__name__)
+app = Flask(__name__)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
+
 
 class PDF(FPDF):
     def headline(self, headline):
-        self.set_font('Times', 'B', 18)
+        self.set_font('Roboto', 'B', 18)
         self.set_fill_color(255, 255, 255)
         self.cell(0, 5, headline, 0, 1, 'C', 1)
         self.ln(4)
 
     def paragraph(self, paragraph):
-        self.set_font('Times', '', 14)
+        self.set_font('Roboto', '', 14)
         self.set_fill_color(255, 255, 255)
         self.multi_cell(0, 5, paragraph)
         self.ln(4)
@@ -64,9 +70,11 @@ def extractOrder(paragraphs):
             order.append('p')
     return order
 
-def pages_to_pdf(uris, output_filename="formatted.pdf"):
+def pages_to_pdf(uris):
     wpdf = PDF()
-    wpdf.add_page()    
+    wpdf.add_page()
+    wpdf.add_font('Roboto', 'B', 'Roboto-Bold.ttf')
+    wpdf.add_font('Roboto', '', 'Roboto-Regular.ttf')
     for uri in uris:
         uri = unquote(uri)
         paragraphs = extract_data(uri)
@@ -79,7 +87,7 @@ def pages_to_pdf(uris, output_filename="formatted.pdf"):
             elif order[i] == 'p':
                 wpdf.paragraph(paragraphs[i])
 
-    wpdf.output(output_filename, 'F')
+    return wpdf.output(dest='S')
 
 def detect_texts(uri):
     """Detects text in the file."""
@@ -136,6 +144,7 @@ def get_ocr_data_from_uri(uri):
 
 
 @app.route("/")
+@cross_origin()
 def hello_world():
     return jsonify({"Routes": {
         "v1/":[
@@ -144,6 +153,7 @@ def hello_world():
     }})
 
 @app.route("/v1/get_text_bounds/")
+@cross_origin()
 def get_text_bounds():
     app.logger.info(request.args)
     if request.args.get("uri", default=-1) == -1:
@@ -154,6 +164,7 @@ def get_text_bounds():
         return jsonify(data)
 
 @app.route("/v1/generate_typed_notes/")
+@cross_origin()
 def generate_typed_notes():
     if request.args.get("uris", default=-1) == -1:
         return jsonify({"Error" : "No img uris provided"})
@@ -162,12 +173,12 @@ def generate_typed_notes():
             uris = eval(request.args.get("uris"))
         except:
             return jsonify({"Error" : "Invalid uris provided"})
-            
+
         if isinstance(uris, list):
             # if all([ isinstance(val, str) for val in uris]):
             app.logger.info("created pdf")
-            pages_to_pdf(uris)
-            upload_to_drive("formatted.pdf")
+            data = pages_to_pdf(uris)
+            upload_data_to_drive("formatted.pdf", data)
 
             return jsonify(uris)
         else:
