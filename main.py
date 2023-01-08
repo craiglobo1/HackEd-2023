@@ -55,10 +55,6 @@ def extract_data(data):
         paragraphs[i]["text"] = paragraphs[i]["text"].replace(" -", "-")
         paragraphs[i]["text"] = paragraphs[i]["text"].replace("- ", "-")
 
-    return paragraphs
-
-
-def extractOrder(paragraphs):
     for i, para in enumerate(paragraphs):
         word_heights = [ get_height([ bound[1] for bound in word["bounds"]]) for word in para["words"]]
         avg_word_height = sum(word_heights)/len(word_heights)
@@ -78,7 +74,7 @@ def extractOrder(paragraphs):
     
     print(max_width, max_height)
 
-    order = []
+    remove_idxs = set()
     for i, para in enumerate(paragraphs):
         paragraphs[i]["fnt_size"] = (paragraphs[i]["fnt_size"] - min_size)/size_range
         if min([bounds[1] for bounds in para["bounds"]]) < max_height*0.1:
@@ -88,13 +84,24 @@ def extractOrder(paragraphs):
             paragraphs[i]["fnt_size"] *= 0.9
         
         if paragraphs[i]["fnt_size"] <= 0.05:
+            remove_idxs.add(i)
+
+    paragraphs = [ paragraphs[i] for i in range(len(paragraphs)) if i not in remove_idxs]
+
+    return paragraphs
+
+
+def extractOrder(paragraphs):
+    order = []
+    for i, para in enumerate(paragraphs):
+        if paragraphs[i]["fnt_size"] <= 0.05:
             order.append("")        
         elif paragraphs[i]["fnt_size"] >= 0.95:
             order.append('h')
         else:
             order.append('p')
     
-    print([ para["fnt_size"] for para in paragraphs])
+    # print([ para["fnt_size"] for para in paragraphs])
 
     # order = []
     # for i in range(len(paragraphs)):
