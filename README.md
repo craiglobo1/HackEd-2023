@@ -2,7 +2,7 @@
 ---
 **An easy way to convert Handwritten Notes into a readble digital PDF**
 
-![banner](original.png)
+![banner](./original.png)
 
 **Handwrite** is a web app that provides an easy way to convert Handwritten Notes into a typed digital PDF file
 
