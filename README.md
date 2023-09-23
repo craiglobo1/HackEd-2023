@@ -2,6 +2,8 @@
 ---
 **An easy way to convert Handwritten Notes into a readble digital PDF**
 
+![banner](original.png)
+
 **Handwrite** is a web app that provides an easy way to convert Handwritten Notes into a typed digital PDF file
 
 This project was made for the HACKEd 2023 hackaton and was created within a 24-hour time frame on Jan 7 – 8, 2023 by
